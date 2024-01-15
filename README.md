@@ -220,9 +220,67 @@ Valide se criou tudo nos 3 bancos, veja se está tudo certinho (eu sei que tá, 
 Pra entrar na pasta dê um `cd gold_adb` e vamos rodar 1 comando (se você não rodar na pasta vai dar merda, pois ele não encontra o `dbt_project.yml`):
 * `dbt run` - Comando que faz o Join da porra toda e gera a tabela no catalogo negócios e no database Gold.
 
+O monstrinho que criei nessa ultima etapa faz o seguinte:
+1. Cria views (pensei em fazer temp view mas pra fins didáticos optei por views convencionais, pra gente ver o lineage da tabela final). São criadas 3 views uma para a silver de cada um dos bancos (Redshift, BigQuery e Databricks).
+2. Criei um modelo pra cada um deles pra que eu posssa referenciar no modelo final que é o `eja_consolidada`.
+
 Vamos rodar 2 comandinhos extra que vai gerar a documentação pra gente dar uma olhada:
 * `dbt docs generate` - gera a documentação das tabelas criadas
 * `dbt docs serve` - Sobe um serviço web na porta 8080 pra visualizar a documentação, pra sair basta dar `CTRL + C`
 
+**OBS:** Aproveite para comparar o lineage do DBT dessa tabela final mas aproveite pra ver o Lineage do Unity Catalog que é muito mais completo.
 
+Em resumo o DBT é um monstro gratuito, o ponto negativo é que não tenho um portal centralizado dessa documentação trabalhando com DBT-CORE, teria que pagar uma licença e centralizar o desenvolvimento da gelera lá, como estou trabalhando com 3 bancos em 3 clouds diferentes, muda o banco, muda o catalogo, muda o projeto.
 
+Fiquei chocado com o tempo de implantação de tudo depois de feito, a possibilidade do controle de versão e o quão incrivel deve ser o CI/CD dessa implementação.
+
+## Criando a função de controle de acesso e mascaramento
+Com essa tabela `eja_consolidada` criada vou sugerir um cenário:
+
+**Os dados do INEP já se encontram criptografados, vou restringir o acesso de visualização do valor, para um determinado grupo de usuários do Unity Catalog, mascarando o `valor_destinado` exibindo `R$ **.****.**`, querem apostar?
+
+Tenho os seguintes grupos criados:
+* admin - onde estou eu Anselmo
+* restrito - onde está o usuário **Restrito da Silva**
+
+Esses grupos são do Unity Catalog mas estão vinculados a usuários do Active Directory, mudou o grupo no AD muda o acesso. O Acesso desse user vai estar restrito ao Workspace Databricks dele e ele vai ver só a tabela Gold dele, nesse Workspace tem um SQL Warehouse pequeno, ele não precisa de um cluster Spark ou qualquer outro tipo de feature muito cara do Databricks. Se liga como fica limitado.
+![Dado Mascarado](imagens/catalogo_restrito.png "Restrição por grupo de usuário do Unity")
+
+Pra que isso funcione, vamos criar uma função lá no `engenharia`.`tools`, onde colocamos nossa function de criptografia (lembrando que os acessos a elas ficam restritos a engenharia). Levando em consideração que tenho os pré requisitos feitos, vamos criar a função e aplicar na tabela.
+```
+create or replace function engenharia.tools.valor_mask(valor string)
+return case when IS_ACCOUNT_GROUP_MEMBER('full') then valor else "R$ *.***,**" END;
+```
+
+Agora com a função criada vamos alterar a tabela `negocio.gold.eja_consolidada` na coluna `valor_destinado`:
+```
+alter table
+  negocio.gold.eja_consolidada
+alter column
+  VALOR_DESTINADO
+set
+  mask engenharia.tools.valor_mask;
+```
+
+### Validando o mascaramento
+Agora vamos ver se vai funcionar, numa aba anônima de preferência logamos com o usuário `Restrito da Silva` no Workspace Databricks `adbnegocio01` e rodamos uma query na tabela `eja_consolidada`, o resultado tem que ser o da imagem abaixo:
+
+![Dado Mascarado](imagens/dado_mascarado.png "Restrição por grupo de usuário do Unity")
+
+## Validação
+Vale a pena ver se os dados batem em todas as tabelas, pra isso vamos fazer um count dos registros unicos de cada uma das tabelas pra ver se bate com o resultado final, faça com o user administrativo.
+```
+select 
+(select count(distinct INEP) from rescue.bronze.dados_eja) as tabela_bronze_databricks,
+(select count(distinct INEP) from cat_bq_rescue.bronze.dados_eja) as tabela_bronze_bq,
+(select count(distinct INEP) from cat_rs_rescue.bronze.dados_eja) as tabela_bronze_rs,
+(select count(distinct INEP) from negocio.gold.eja_consolidada) as tabela_consolidada_adb_bq
+```
+
+Se deu **10.205** registros deu tudo certo.
+
+## Finalizando
+Obrigado e parabéns se acompanhoou até aqui! Que esse material seja muito útil pra você!
+Dê uma moralzinha lá nos canais da Rescue no Youtube e Medium e me segue lá no Linkedin.
+
+Abraço!

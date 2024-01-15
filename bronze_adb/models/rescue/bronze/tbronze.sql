@@ -19,7 +19,7 @@
 
 with bronze as (
     select * 
-    from cat_bq_rescue.bq_databricks.dados_eja
+    from cat_bq_rescue.bronze.dados_eja
 )
 
 select *

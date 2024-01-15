@@ -1,0 +1,16 @@
+models:
+  - name: dados_eja
+    description: "Tabela Silver no Redshift com dados do EJA importados da camada Bronze, adicionamos a coluna PAIS e criptografamos a coluna INEP com MD5"
+    columns:
+      - name: TOTAL_REGISTOS
+        description: "Total de registros encontrados do incentivo"
+      - name: ESCOLA
+        description: "Escola incluida no projeto"
+      - name: INEP
+        description: "Código INEP da escola (Agora criptografado na Silver com MD5)"
+      - name: ANO
+        description: "Ano do Incentivo"
+      - name: VALOR_DESTINADO
+        description: "Valor total do incentivo"
+      - name: PAIS
+        description: "Pais da Escola"

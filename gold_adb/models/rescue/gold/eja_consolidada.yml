@@ -1,0 +1,20 @@
+models:
+  - name: eja_consolidada
+    description: "Tabela Gold no Catalogo de negócios que cruza os dados de INEP criptografados nas 3 clouds."
+    columns:
+      - name: ESCOLA
+        description: "Escola incluida no projeto"
+      - name: INEP
+        description: "Código INEP da escola (Aberto na camada bronze mas deve ser criptografado na Silver)"
+      - name: STATUS
+        description: "Status da parada"
+      - name: CIDADE
+        description: "Cidade do incentivo - que veio do BigQuery"
+      - name: ESTADO
+        description: "Estado do incentivo - que veio do BigQuery"
+      - name: VALOR_DESTINADO
+        description: "Valor destinado do incentivo - que veio de BigQuery"
+      - name: PAIS
+        description: "Pais - Que veio do Redshift"
+      - name: ANO
+        description: "Ano do incentivo - que veio do Redshift"

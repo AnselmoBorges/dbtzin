@@ -1,0 +1,18 @@
+models:
+  - name: dados_eja
+    description: "Tabela Silver no Big Query com dados do EJA importados da camada Bronze, adicionamos as coluna CIDADE e ESTADO e criptografamos a coluna INEP com MD5"
+    columns:
+      - name: TOTAL_REGISTOS
+        description: "Total de registros encontrados do incentivo"
+      - name: ESCOLA
+        description: "Escola incluida no projeto"
+      - name: INEP
+        description: "Código INEP da escola (Agora criptografado na Silver com MD5)"
+      - name: ANO
+        description: "Ano do Incentivo"
+      - name: VALOR_DESTINADO
+        description: "Valor total do incentivo"
+      - name: CIDADE
+        description: "Cidade da Escola"
+      - name: ESTADO
+        description: "Estado da Escola"

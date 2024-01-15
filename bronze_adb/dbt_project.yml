@@ -1,0 +1,39 @@
+
+# Name your project! Project names should contain only lowercase characters
+# and underscores. A good package name should reflect your organization's
+# name or the intended use of these models
+name: 'bronze_adb'
+version: '1.0.0'
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'bronze_adb'
+
+# These configurations specify where dbt should look for different types of files.
+# The `model-paths` config, for example, states that models in this project can be
+# found in the "models/" directory. You probably won't need to change these!
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+
+# Configurando modelos (documentação): https://docs.getdbt.com/docs/configuring-models
+
+## Nessa configuração abaixo eu coloco todas as configurações do projeto, sejam elas genericas
+## ou especificas, pra genericas basta colocar um + na frente da configuração, nesse caso abaixo
+## tenho o projeto 'bronze_adb' que por sua vez tem um grupo chamado rescue que represento pelo
+## catalogo do Databricks, a configuração materialized por exemplo diz que todos os modelos desse
+## grupo serão criados como tabela, caso eu queira que qualquer um dos modelos do projeto tenha
+## outras configurações, posso user o config direto no modelo, que sobressai a regra daqui.
+models:
+  bronze_adb:
+    # Config indicated by + and applies to all files under models/example/
+    rescue:
+      materialized: table

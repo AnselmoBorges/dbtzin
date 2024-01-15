@@ -1,0 +1,17 @@
+models:
+  - name: tbronze
+    description: "Tabela bronze no Azure Databricks com dados do EJA importados de uma tabela do Google BigQuery."
+    columns:
+      - name: TOTAL_REGISTOS
+        description: "Total de registros encontrados do incentivo"
+      - name: ESCOLA
+        description: "Escola incluida no projeto"
+      - name: INEP
+        description: "Código INEP da escola (Aberto na camada bronze mas deve ser criptografado na Silver)"
+      - name: ANO
+        description: "Ano do Incentivo"
+      - name: VALOR_DESTINADO
+        description: "Valor total do incentivo"
+    config:
+      materialized: table
+      schema: bronze
